@@ -92,6 +92,7 @@ class Card {
 }
 
 export async function callTrello(req: Request, res: Response) {
+  console.log(req.method, req.body, req.query);
   if (req.method !== "POST") {
     res.status(405).json({ error: "Only 'POST' requests are allowed" });
     return;
@@ -113,11 +114,18 @@ export async function callTrello(req: Request, res: Response) {
         res.status(500).json({ error: error.toString() });
       });
   } else {
-    res.status(400).json({
-      error: card.isValid
-        ? "The search param listId is not given"
-        : "Request body is missing name",
-    });
+    // this is because heyflow wants a 200 when init
+    if (
+      req.body.message.match(/Heyflow Webhook API successfully initialized/)
+    ) {
+      res.status(201).send();
+    } else {
+      res.status(400).json({
+        error: card.isValid
+          ? "The search param listId is not given"
+          : "Request body is missing name",
+      });
+    }
     return;
   }
 }
